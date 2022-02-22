@@ -159,10 +159,9 @@ class PackageInfo:
         package.files = self.files
 
         if root_dir or (self._source_type in {"directory"} and self._source_url):
-            # this is a local poetry project, this means we can extract "richer"
-            # requirement information, eg: development requirements etc.
-            poetry_package = self._get_poetry_package(path=root_dir or self._source_url)
-            if poetry_package:
+            if poetry_package := self._get_poetry_package(
+                path=root_dir or self._source_url
+            ):
                 package.extras = poetry_package.extras
                 for dependency in poetry_package.requires:
                     package.add_dependency(dependency)
@@ -406,8 +405,7 @@ class PackageInfo:
             except ValueError:
                 return None
 
-        info = cls._from_distribution(dist=dist)
-        if info:
+        if info := cls._from_distribution(dist=dist):
             return info
         return None
 
@@ -524,8 +522,7 @@ class PackageInfo:
         :param disable_build: If not `True` and setup reader fails, PEP 517 isolated
             build is attempted in order to gather metadata.
         """
-        project_package = cls._get_poetry_package(path)
-        if project_package:
+        if project_package := cls._get_poetry_package(path):
             info = cls.from_package(project_package)
         else:
             info = cls.from_metadata(path)

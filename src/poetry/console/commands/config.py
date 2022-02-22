@@ -57,7 +57,7 @@ To remove a repository (repo is a short alias for repositories):
         from poetry.config.config import int_normalizer
         from poetry.locations import CACHE_DIR
 
-        unique_config_values = {
+        return {
             "cache-dir": (
                 str,
                 lambda val: str(Path(val)),
@@ -101,8 +101,6 @@ To remove a repository (repo is a short alias for repositories):
                 None,
             ),
         }
-
-        return unique_config_values
 
     def handle(self) -> Optional[int]:
         from pathlib import Path
@@ -188,9 +186,7 @@ To remove a repository (repo is a short alias for repositories):
                 values,
             )
 
-        # handle repositories
-        m = re.match(r"^repos?(?:itories)?(?:\.(.+))?", self.argument("key"))
-        if m:
+        if m := re.match(r"^repos?(?:itories)?(?:\.(.+))?", self.argument("key")):
             if not m.group(1):
                 raise ValueError("You cannot remove the [repositories] section")
 
@@ -215,9 +211,7 @@ To remove a repository (repo is a short alias for repositories):
                 "Example: poetry config repositories.foo https://bar.com"
             )
 
-        # handle auth
-        m = re.match(r"^(http-basic|pypi-token)\.(.+)", self.argument("key"))
-        if m:
+        if m := re.match(r"^(http-basic|pypi-token)\.(.+)", self.argument("key")):
             from poetry.utils.password_manager import PasswordManager
 
             password_manager = PasswordManager(config)
@@ -256,11 +250,9 @@ To remove a repository (repo is a short alias for repositories):
 
             return 0
 
-        # handle certs
-        m = re.match(
+        if m := re.match(
             r"(?:certificates)\.([^.]+)\.(cert|client-cert)", self.argument("key")
-        )
-        if m:
+        ):
             if self.option("unset"):
                 config.auth_config_source.remove_property(
                     f"certificates.{m.group(1)}.{m.group(2)}"
@@ -355,7 +347,7 @@ To remove a repository (repo is a short alias for repositories):
                     if k is None:
                         k = ""
 
-                    k += re.sub(r"^config\.", "", key + ".")
+                    k += re.sub(r"^config\.", "", f'{key}.')
                     if setting and len(setting) > 1:
                         setting = ".".join(setting.split(".")[1:])
 

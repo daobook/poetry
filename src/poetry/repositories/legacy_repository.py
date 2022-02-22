@@ -121,8 +121,7 @@ class Page:
                 yield link
 
     def link_version(self, link: Link) -> Optional[Version]:
-        m = wheel_file_re.match(link.filename)
-        if m:
+        if m := wheel_file_re.match(link.filename):
             version = m.group("ver")
         else:
             info, ext = link.splitext()

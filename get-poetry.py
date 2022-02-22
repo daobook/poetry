@@ -107,9 +107,7 @@ def style(fg, bg, options):
         if not isinstance(options, (list, tuple)):
             options = [options]
 
-        for option in options:
-            codes.append(OPTIONS[option])
-
+        codes.extend(OPTIONS[option] for option in options)
     return "\033[{}m".format(";".join(map(str, codes)))
 
 
@@ -675,8 +673,9 @@ class Installer:
         for executable in allowed_executables:
             try:
                 raw_version = subprocess.check_output(
-                    executable + " --version", stderr=subprocess.STDOUT, shell=True
+                    f'{executable} --version', stderr=subprocess.STDOUT, shell=True
                 ).decode("utf-8")
+
             except subprocess.CalledProcessError:
                 continue
 
@@ -820,7 +819,7 @@ class Installer:
 
         new_path = POETRY_BIN
         if POETRY_BIN in old_path:
-            old_path = old_path.replace(POETRY_BIN + ";", "")
+            old_path = old_path.replace(f'{POETRY_BIN};', "")
 
         if old_path:
             new_path += ";"
@@ -885,10 +884,10 @@ class Installer:
 
         poetry_path = POETRY_BIN
         if poetry_path in path:
-            path = path.replace(POETRY_BIN + ";", "")
+            path = path.replace(f'{POETRY_BIN};', "")
 
-            if poetry_path in path:
-                path = path.replace(POETRY_BIN, "")
+        if poetry_path in path:
+            path = path.replace(POETRY_BIN, "")
 
         self.set_windows_path_var(path)
 
@@ -924,9 +923,7 @@ class Installer:
 
     def get_export_string(self):
         path = POETRY_BIN.replace(os.getenv("HOME", ""), "$HOME")
-        export_string = 'export PATH="{}:$PATH"'.format(path)
-
-        return export_string
+        return 'export PATH="{}:$PATH"'.format(path)
 
     def get_unix_profiles(self):
         profiles = [os.path.join(HOME, ".profile")]
@@ -954,19 +951,18 @@ class Installer:
 
         if not self._modify_path:
             kwargs["platform_msg"] = PRE_MESSAGE_NO_MODIFY_PATH
+        elif "fish" in SHELL:
+            kwargs["platform_msg"] = PRE_MESSAGE_FISH
+        elif WINDOWS:
+            kwargs["platform_msg"] = PRE_MESSAGE_WINDOWS
         else:
-            if "fish" in SHELL:
-                kwargs["platform_msg"] = PRE_MESSAGE_FISH
-            elif WINDOWS:
-                kwargs["platform_msg"] = PRE_MESSAGE_WINDOWS
-            else:
-                profiles = [
-                    colorize("comment", p.replace(os.getenv("HOME", ""), "$HOME"))
-                    for p in self.get_unix_profiles()
-                ]
-                kwargs["platform_msg"] = PRE_MESSAGE_UNIX.format(
-                    rcfiles="\n".join(profiles), plural="s" if len(profiles) > 1 else ""
-                )
+            profiles = [
+                colorize("comment", p.replace(os.getenv("HOME", ""), "$HOME"))
+                for p in self.get_unix_profiles()
+            ]
+            kwargs["platform_msg"] = PRE_MESSAGE_UNIX.format(
+                rcfiles="\n".join(profiles), plural="s" if len(profiles) > 1 else ""
+            )
 
         print(PRE_MESSAGE.format(**kwargs))
 

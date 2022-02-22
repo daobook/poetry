@@ -106,9 +106,8 @@ dependencies and not including the current project, run the command with the
 
         self._installer.extras(extras)
 
-        excluded_groups = []
-        included_groups = []
         only_groups = []
+        excluded_groups = []
         if self.option("no-dev"):
             self.line_error(
                 "<warning>The `<fg=yellow;options=bold>--no-dev</>` option is"
@@ -131,13 +130,12 @@ dependencies and not including the current project, run the command with the
                 for group in groups.split(",")
             ]
         )
-        included_groups.extend(
-            [
-                group.strip()
-                for groups in self.option("with")
-                for group in groups.split(",")
-            ]
-        )
+        included_groups = [
+            group.strip()
+            for groups in self.option("with")
+            for group in groups.split(",")
+        ]
+
         only_groups.extend(
             [
                 group.strip()

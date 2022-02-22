@@ -45,10 +45,7 @@ def get_extra_package_names(
         """Recursively find dependencies for packages names"""
         # for each extra package name
         for package_name in package_names:
-            # Find the actual Package object. A missing key indicates an implicit
-            # dependency (like setuptools), which should be ignored
-            package = packages_by_name.get(canonicalize_name(package_name))
-            if package:
+            if package := packages_by_name.get(canonicalize_name(package_name)):
                 if package.name not in seen_package_names:
                     seen_package_names.add(package.name)
                     yield package.name

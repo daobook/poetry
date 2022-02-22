@@ -49,16 +49,16 @@ def temporary_directory(*args: Any, **kwargs: Any) -> Iterator[str]:
 
 
 def get_cert(config: "Config", repository_name: str) -> Optional[Path]:
-    cert = config.get(f"certificates.{repository_name}.cert")
-    if cert:
+    if cert := config.get(f"certificates.{repository_name}.cert"):
         return Path(cert)
     else:
         return None
 
 
 def get_client_cert(config: "Config", repository_name: str) -> Optional[Path]:
-    client_cert = config.get(f"certificates.{repository_name}.client-cert")
-    if client_cert:
+    if client_cert := config.get(
+        f"certificates.{repository_name}.client-cert"
+    ):
         return Path(client_cert)
     else:
         return None
@@ -136,6 +136,4 @@ def is_dir_writable(path: Path, create: bool = False) -> bool:
 
 
 def pluralize(count: int, word: str = "") -> str:
-    if count == 1:
-        return word
-    return word + "s"
+    return word if count == 1 else f'{word}s'

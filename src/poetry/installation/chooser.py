@@ -43,7 +43,7 @@ class Wheel:
     def get_minimum_supported_index(self, tags: List[Tag]) -> Optional[int]:
         indexes = [tags.index(t) for t in self.tags if t in tags]
 
-        return min(indexes) if indexes else None
+        return min(indexes, default=None)
 
     def is_supported_by_environment(self, env: "Env") -> bool:
         return bool(set(env.supported_tags).intersection(self.tags))
@@ -104,7 +104,7 @@ class Chooser:
                 selected_links.append(link)
                 continue
 
-            h = link.hash_name + ":" + link.hash
+            h = f'{link.hash_name}:{link.hash}'
             if h not in hashes:
                 continue
 
@@ -182,6 +182,6 @@ class Chooser:
         if not link.hash:
             return True
 
-        h = link.hash_name + ":" + link.hash
+        h = f'{link.hash_name}:{link.hash}'
 
         return h in {f["hash"] for f in package.files}
