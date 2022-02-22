@@ -147,17 +147,15 @@ class VersionSolver:
         for term in incompatibility.terms:
             relation = self._solution.relation(term)
 
-            if relation == SetRelation.DISJOINT:
-                # If term is already contradicted by _solution, then
-                # incompatibility is contradicted as well and there's nothing new we
-                # can deduce from it.
+            if (
+                relation != SetRelation.DISJOINT
+                and relation == SetRelation.OVERLAPPING
+                and unsatisfied is not None
+                or relation == SetRelation.DISJOINT
+            ):
                 return None
-            elif relation == SetRelation.OVERLAPPING:
-                # If more than one term is inconclusive, we can't deduce anything about
-                # incompatibility.
-                if unsatisfied is not None:
-                    return None
 
+            elif relation == SetRelation.OVERLAPPING:
                 # If exactly one term in incompatibility is inconclusive, then it's
                 # almost satisfied and [term] is the unsatisfied term. We can add the
                 # inverse of the term to _solution.

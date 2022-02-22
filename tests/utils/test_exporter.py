@@ -467,7 +467,7 @@ def test_exporter_can_export_requirements_txt_with_nested_packages_and_markers(
         assert dependency == expected_dependency
         assert dependency.marker == expected_dependency.marker
 
-    assert expected == {}
+    assert not expected
 
 
 @pytest.mark.parametrize(

@@ -241,11 +241,11 @@ class SitePackages:
         if self._writable_candidates is not None:
             return self._writable_candidates
 
-        self._writable_candidates = []
-        for candidate in self._candidates:
-            if not is_dir_writable(path=candidate, create=True):
-                continue
-            self._writable_candidates.append(candidate)
+        self._writable_candidates = [
+            candidate
+            for candidate in self._candidates
+            if is_dir_writable(path=candidate, create=True)
+        ]
 
         return self._writable_candidates
 
@@ -877,11 +877,11 @@ class EnvManager:
                     ):
                         continue
                 elif not supported_python.allows_any(
-                    parse_constraint(python_to_try + ".*")
+                    parse_constraint(f'{python_to_try}.*')
                 ):
                     continue
 
-                python = "python" + python_to_try
+                python = f'python{python_to_try}'
 
                 if io.is_debug():
                     io.write_line(f"<debug>Trying {python}</debug>")
@@ -1175,12 +1175,11 @@ class Env:
         if self._is_windows and self._is_conda:
             bin_dir = self._path
 
-        python_executables = sorted(
+        if python_executables := sorted(
             p.name
             for p in bin_dir.glob("python*")
             if re.match(r"python(?:\d+(?:\.\d+)?)?(?:\.exe)?$", p.name)
-        )
-        if python_executables:
+        ):
             executable = python_executables[0]
             if executable.endswith(".exe"):
                 executable = executable[:-4]
@@ -1188,12 +1187,11 @@ class Env:
             self._executable = executable
 
     def _find_pip_executable(self) -> None:
-        pip_executables = sorted(
+        if pip_executables := sorted(
             p.name
             for p in self._bin_dir.glob("pip*")
             if re.match(r"pip(?:\d+(?:\.\d+)?)?(?:\.exe)?$", p.name)
-        )
-        if pip_executables:
+        ):
             pip_executable = pip_executables[0]
             if pip_executable.endswith(".exe"):
                 pip_executable = pip_executable[:-4]
@@ -1257,15 +1255,11 @@ class Env:
 
     @property
     def usersite(self) -> Optional[Path]:
-        if "usersite" in self.paths:
-            return Path(self.paths["usersite"])
-        return None
+        return Path(self.paths["usersite"]) if "usersite" in self.paths else None
 
     @property
     def userbase(self) -> Optional[Path]:
-        if "userbase" in self.paths:
-            return Path(self.paths["userbase"])
-        return None
+        return Path(self.paths["userbase"]) if "userbase" in self.paths else None
 
     @property
     def purelib(self) -> Path:
@@ -1353,12 +1347,7 @@ class Env:
         return True
 
     def get_command_from_bin(self, bin: str) -> List[str]:
-        if bin == "pip":
-            # when pip is required we need to ensure that we fallback to
-            # embedded pip when pip is not available in the environment
-            return self.get_pip_command()
-
-        return [self._bin(bin)]
+        return self.get_pip_command() if bin == "pip" else [self._bin(bin)]
 
     def run(self, bin: str, *args: str, **kwargs: Any) -> Union[str, int]:
         cmd = self.get_command_from_bin(bin) + list(args)
@@ -1438,7 +1427,7 @@ class Env:
         Return path to the given executable.
         """
         if self._is_windows and not bin.endswith(".exe"):
-            bin_path = self._bin_dir / (bin + ".exe")
+            bin_path = self._bin_dir / f'{bin}.exe'
         else:
             bin_path = self._bin_dir / bin
 
@@ -1449,7 +1438,7 @@ class Env:
             # the root of the env path.
             if self._is_windows:
                 if not bin.endswith(".exe"):
-                    bin_path = self._path / (bin + ".exe")
+                    bin_path = self._path / f'{bin}.exe'
                 else:
                     bin_path = self._path / bin
 
@@ -1725,26 +1714,23 @@ class GenericEnv(VirtualEnv):
                 break
 
             if not python_executable:
-                python_executables = sorted(
+                if python_executables := sorted(
                     p.name
                     for p in self._bin_dir.glob(python_pattern)
                     if re.match(r"python(?:\d+(?:\.\d+)?)?(?:\.exe)?$", p.name)
-                )
-
-                if python_executables:
+                ):
                     executable = python_executables[0]
                     if executable.endswith(".exe"):
                         executable = executable[:-4]
 
                     python_executable = executable
 
-            if not pip_executable:
-                pip_executables = sorted(
-                    p.name
-                    for p in self._bin_dir.glob(pip_pattern)
-                    if re.match(r"pip(?:\d+(?:\.\d+)?)?(?:\.exe)?$", p.name)
-                )
-                if pip_executables:
+            if pip_executables := sorted(
+                p.name
+                for p in self._bin_dir.glob(pip_pattern)
+                if re.match(r"pip(?:\d+(?:\.\d+)?)?(?:\.exe)?$", p.name)
+            ):
+                if not pip_executable:
                     pip_executable = pip_executables[0]
                     if pip_executable.endswith(".exe"):
                         pip_executable = pip_executable[:-4]
@@ -1877,10 +1863,7 @@ class MockEnv(NullEnv):
 
     @property
     def sys_path(self) -> List[str]:
-        if self._sys_path is None:
-            return super().sys_path
-
-        return self._sys_path
+        return super().sys_path if self._sys_path is None else self._sys_path
 
     def get_marker_env(self) -> Dict[str, Any]:
         if self._mock_marker_env is not None:

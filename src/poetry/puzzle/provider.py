@@ -266,8 +266,9 @@ class Provider:
             package.root_dir = dependency.base
 
         package.files = [
-            {"file": dependency.path.name, "hash": "sha256:" + dependency.hash()}
+            {"file": dependency.path.name, "hash": f'sha256:{dependency.hash()}'}
         ]
+
 
         return [package]
 
@@ -737,8 +738,7 @@ class Provider:
                 m = re.match(r"fact: (.+?) depends on (.+?) \((.+?)\)", message)
                 if m is None:
                     raise ValueError(f"Unable to parse fact: {message}")
-                m2 = re.match(r"(.+?) \((.+?)\)", m.group(1))
-                if m2:
+                if m2 := re.match(r"(.+?) \((.+?)\)", m.group(1)):
                     name = m2.group(1)
                     version = f" (<c2>{m2.group(2)}</c2>)"
                 else:
@@ -767,8 +767,7 @@ class Provider:
                 message,
             )
         elif message.startswith("derived:"):
-            m = re.match(r"derived: (.+?) \((.+?)\)$", message)
-            if m:
+            if m := re.match(r"derived: (.+?) \((.+?)\)$", message):
                 message = (
                     f"<fg=blue>derived</>: <c1>{m.group(1)}</c1>"
                     f" (<c2>{m.group(2)}</c2>)"
@@ -778,10 +777,10 @@ class Provider:
                     f"<fg=blue>derived</>: <c1>{message.split('derived: ')[1]}</c1>"
                 )
         elif message.startswith("conflict:"):
-            m = re.match(r"conflict: (.+?) depends on (.+?) \((.+?)\)", message)
-            if m:
-                m2 = re.match(r"(.+?) \((.+?)\)", m.group(1))
-                if m2:
+            if m := re.match(
+                r"conflict: (.+?) depends on (.+?) \((.+?)\)", message
+            ):
+                if m2 := re.match(r"(.+?) \((.+?)\)", m.group(1)):
                     name = m2.group(1)
                     version = f" (<c2>{m2.group(2)}</c2>)"
                 else:

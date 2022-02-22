@@ -62,21 +62,15 @@ def get_dependency(
 
 
 def fixture(path: Optional[str] = None) -> Path:
-    if path:
-        return FIXTURE_PATH / path
-    else:
-        return FIXTURE_PATH
+    return FIXTURE_PATH / path if path else FIXTURE_PATH
 
 
 def copy_or_symlink(source: Path, dest: Path) -> None:
     if dest.exists():
-        if dest.is_symlink():
+        if dest.is_symlink() or not dest.is_symlink() and not dest.is_dir():
             os.unlink(str(dest))
-        elif dest.is_dir():
-            shutil.rmtree(str(dest))
         else:
-            os.unlink(str(dest))
-
+            shutil.rmtree(str(dest))
     # Python2 does not support os.symlink on Windows whereas Python3 does.
     # os.symlink requires either administrative privileges or developer mode on Win10,
     # throwing an OSError if neither is active.

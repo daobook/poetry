@@ -40,7 +40,7 @@ class MockRepository(LegacyRepository):
         parts = endpoint.split("/")
         name = parts[1]
 
-        fixture = self.FIXTURES / (name + ".html")
+        fixture = self.FIXTURES / f'{name}.html'
         if not fixture.exists():
             return
 
@@ -369,7 +369,7 @@ def test_get_redirected_response_url(
     def get_mock(url: str) -> requests.Response:
         response = requests.Response()
         response.status_code = 200
-        response.url = redirect_url + "/foo"
+        response.url = f'{redirect_url}/foo'
         return response
 
     monkeypatch.setattr(repo.session, "get", get_mock)

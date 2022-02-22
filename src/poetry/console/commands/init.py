@@ -129,8 +129,7 @@ The <c1>init</c1> command creates a basic <comment>pyproject.toml</> file in the
         author = self.option("author")
         if not author and vcs_config and vcs_config.get("user.name"):
             author = vcs_config["user.name"]
-            author_email = vcs_config.get("user.email")
-            if author_email:
+            if author_email := vcs_config.get("user.email"):
                 author += f" <{author_email}>"
 
         question = self.create_question(
@@ -139,11 +138,7 @@ The <c1>init</c1> command creates a basic <comment>pyproject.toml</> file in the
         question.set_validator(lambda v: self._validate_author(v, author))
         author = self.ask(question)
 
-        if not author:
-            authors = []
-        else:
-            authors = [author]
-
+        authors = [] if not author else [author]
         license = self.option("license") or ""
 
         question = self.create_question(
@@ -290,11 +285,7 @@ You can specify a package in the following forms:
                     continue
 
                 canonicalized_name = canonicalize_name(constraint["name"])
-                matches = self._get_pool().search(canonicalized_name)
-                if not matches:
-                    self.line_error("<error>Unable to find package</error>")
-                    package = False
-                else:
+                if matches := self._get_pool().search(canonicalized_name):
                     choices = self._generate_choice_list(matches, canonicalized_name)
 
                     info_string = (
@@ -318,6 +309,9 @@ You can specify a package in the following forms:
                     if package is not False:
                         constraint["name"] = package
 
+                else:
+                    self.line_error("<error>Unable to find package</error>")
+                    package = False
                 # no constraint yet, determine the best version automatically
                 if package is not False and "version" not in constraint:
                     question = self.create_question(
@@ -417,8 +411,7 @@ You can specify a package in the following forms:
         for requirement in requirements:
             requirement = requirement.strip()
             extras = []
-            extras_m = re.search(r"\[([\w\d,-_ ]+)\]$", requirement)
-            if extras_m:
+            if extras_m := re.search(r"\[([\w\d,-_ ]+)\]$", requirement):
                 extras = [e.strip() for e in extras_m.group(1).split(",")]
                 requirement, _ = requirement.split("[")
 
@@ -496,34 +489,29 @@ You can specify a package in the following forms:
             require: Dict[str, str] = {}
             if " " in pair:
                 name, version = pair.split(" ", 2)
-                extras_m = re.search(r"\[([\w\d,-_]+)\]$", name)
-                if extras_m:
+                if extras_m := re.search(r"\[([\w\d,-_]+)\]$", name):
                     extras = [e.strip() for e in extras_m.group(1).split(",")]
                     name, _ = name.split("[")
 
                 require["name"] = name
                 if version != "latest":
                     require["version"] = version
+            elif m := re.match(
+                r"^([^><=!: ]+)((?:>=|<=|>|<|!=|~=|~|\^).*)$", requirement.strip()
+            ):
+                name, constraint = m.group(1), m.group(2)
+                if extras_m := re.search(r"\[([\w\d,-_]+)\]$", name):
+                    extras = [e.strip() for e in extras_m.group(1).split(",")]
+                    name, _ = name.split("[")
+
+                require["name"] = name
+                require["version"] = constraint
             else:
-                m = re.match(
-                    r"^([^><=!: ]+)((?:>=|<=|>|<|!=|~=|~|\^).*)$", requirement.strip()
-                )
-                if m:
-                    name, constraint = m.group(1), m.group(2)
-                    extras_m = re.search(r"\[([\w\d,-_]+)\]$", name)
-                    if extras_m:
-                        extras = [e.strip() for e in extras_m.group(1).split(",")]
-                        name, _ = name.split("[")
+                if extras_m := re.search(r"\[([\w\d,-_]+)\]$", pair):
+                    extras = [e.strip() for e in extras_m.group(1).split(",")]
+                    pair, _ = pair.split("[")
 
-                    require["name"] = name
-                    require["version"] = constraint
-                else:
-                    extras_m = re.search(r"\[([\w\d,-_]+)\]$", pair)
-                    if extras_m:
-                        extras = [e.strip() for e in extras_m.group(1).split(",")]
-                        pair, _ = pair.split("[")
-
-                    require["name"] = pair
+                require["name"] = pair
 
             if extras:
                 require["extras"] = extras

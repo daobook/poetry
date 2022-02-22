@@ -54,9 +54,9 @@ def mock_pypi(http: Type["httpretty.httpretty"]) -> None:
         name = parts[-3]
         version = parts[-2]
 
-        fixture = JSON_FIXTURES / name / (version + ".json")
+        fixture = JSON_FIXTURES / name / f'{version}.json'
         if not fixture.exists():
-            fixture = JSON_FIXTURES / (name + ".json")
+            fixture = JSON_FIXTURES / f'{name}.json'
 
         if not fixture.exists():
             return
@@ -79,7 +79,7 @@ def mock_legacy(http: Type["httpretty.httpretty"]) -> None:
         parts = uri.rsplit("/")
         name = parts[-2]
 
-        fixture = LEGACY_FIXTURES / (name + ".html")
+        fixture = LEGACY_FIXTURES / f'{name}.html'
 
         with fixture.open(encoding="utf-8") as f:
             return [200, headers, f.read()]

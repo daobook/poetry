@@ -94,11 +94,14 @@ class Repository(BaseRepository):
     def remove_package(self, package: "Package") -> None:
         package_id = package.unique_name
 
-        index = None
-        for i, repo_package in enumerate(self.packages):
-            if package_id == repo_package.unique_name:
-                index = i
-                break
+        index = next(
+            (
+                i
+                for i, repo_package in enumerate(self.packages)
+                if package_id == repo_package.unique_name
+            ),
+            None,
+        )
 
         if index is not None:
             del self._packages[index]
@@ -107,13 +110,7 @@ class Repository(BaseRepository):
         return []
 
     def search(self, query: str) -> List["Package"]:
-        results: List["Package"] = []
-
-        for package in self.packages:
-            if query in package.name:
-                results.append(package)
-
-        return results
+        return [package for package in self.packages if query in package.name]
 
     def __len__(self) -> int:
         return len(self._packages)

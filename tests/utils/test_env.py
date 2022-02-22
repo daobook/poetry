@@ -62,10 +62,7 @@ class MockVirtualEnv(VirtualEnv):
 
     @property
     def sys_path(self) -> Optional[List[str]]:
-        if self._sys_path is not None:
-            return self._sys_path
-
-        return super().sys_path
+        return self._sys_path if self._sys_path is not None else super().sys_path
 
 
 @pytest.fixture()
@@ -724,7 +721,7 @@ def test_env_has_symlinks_on_nix(tmp_dir: str, tmp_venv: VirtualEnv):
 def test_run_with_input(tmp_dir: str, tmp_venv: VirtualEnv):
     result = tmp_venv.run("python", "-", input_=MINIMAL_SCRIPT)
 
-    assert result == "Minimal Output" + os.linesep
+    assert result == f'Minimal Output{os.linesep}'
 
 
 def test_run_with_input_non_zero_return(tmp_dir: str, tmp_venv: VirtualEnv):

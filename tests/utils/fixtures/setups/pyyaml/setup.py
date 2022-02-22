@@ -125,11 +125,7 @@ class Distribution(_Distribution):
         implementation = platform.python_implementation()
         if implementation != "CPython":
             return False
-        if isinstance(ext, Extension):
-            with_ext = getattr(self, ext.attr_name)
-            return with_ext
-        else:
-            return True
+        return getattr(self, ext.attr_name) if isinstance(ext, Extension) else True
 
 
 class Extension(_Extension):
@@ -147,8 +143,8 @@ class Extension(_Extension):
         self.feature_description = feature_description
         self.feature_check = feature_check
         self.attr_name = "with_" + feature_name.replace("-", "_")
-        self.option_name = "with-" + feature_name
-        self.neg_option_name = "without-" + feature_name
+        self.option_name = f'with-{feature_name}'
+        self.neg_option_name = f'without-{feature_name}'
 
 
 class build_ext(_build_ext):
@@ -285,9 +281,9 @@ class bdist_rpm(_bdist_rpm):
             if with_ext is None:
                 continue
             if with_ext:
-                features.append("--" + ext.option_name)
+                features.append(f'--{ext.option_name}')
             else:
-                features.append("--" + ext.neg_option_name)
+                features.append(f'--{ext.neg_option_name}')
         sys.argv[0] = " ".join([argv0] + features)
         spec_file = _bdist_rpm._make_spec_file(self)
         sys.argv[0] = argv0

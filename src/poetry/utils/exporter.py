@@ -104,8 +104,7 @@ class Exporter:
                 line = f"{package.name}=={package.version}"
 
             if not is_direct_remote_reference and ";" in requirement:
-                markers = requirement.split(";", 1)[1].strip()
-                if markers:
+                if markers := requirement.split(";", 1)[1].strip():
                     line += f" ; {markers}"
 
             if (

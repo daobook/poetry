@@ -56,8 +56,6 @@ def test_setup_reader_read_first_level_setup_call_with_variables(
 ):
     result = SetupReader.read_from_directory(setup("requests"))
 
-    expected_name = None
-    expected_version = None
     expected_install_requires = [
         "chardet>=3.0.2,<3.1.0",
         "idna>=2.5,<2.8",
@@ -71,8 +69,8 @@ def test_setup_reader_read_first_level_setup_call_with_variables(
     }
     expected_python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
-    assert result["name"] == expected_name
-    assert result["version"] == expected_version
+    assert result["name"] is None
+    assert result["version"] is None
     assert result["install_requires"] == expected_install_requires
     assert result["extras_require"] == expected_extras_require
     assert result["python_requires"] == expected_python_requires

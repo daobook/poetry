@@ -76,9 +76,7 @@ def style(fg, bg, options):
         if not isinstance(options, (list, tuple)):
             options = [options]
 
-        for option in options:
-            codes.append(OPTIONS[option])
-
+        codes.extend(OPTIONS[option] for option in options)
     return "\033[{}m".format(";".join(map(str, codes)))
 
 
@@ -196,13 +194,7 @@ def _get_win_folder_with_ctypes(csidl_name):
     buf = ctypes.create_unicode_buffer(1024)
     ctypes.windll.shell32.SHGetFolderPathW(None, csidl_const, None, 0, buf)
 
-    # Downgrade to short path name if have highbit chars. See
-    # <http://bugs.activestate.com/show_bug.cgi?id=85099>.
-    has_high_char = False
-    for c in buf:
-        if ord(c) > 255:
-            has_high_char = True
-            break
+    has_high_char = any(ord(c) > 255 for c in buf)
     if has_high_char:
         buf2 = ctypes.create_unicode_buffer(1024)
         if ctypes.windll.kernel32.GetShortPathNameW(buf.value, buf2, 1024):
@@ -627,7 +619,7 @@ class Installer:
         self._install_comment(version, "Installing Poetry")
 
         if self._git:
-            specification = "git+" + version
+            specification = f'git+{version}'
         elif self._path:
             specification = version
         else:
